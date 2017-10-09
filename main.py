@@ -1,120 +1,67 @@
-from flask import Flask, request
-
+from flask import Flask
+from flask import Flask, flash, redirect, render_template, request, session, abort
+import os
+import cgi
+ 
 app = Flask(__name__)
+
 app.config['DEBUG'] = True
 
+ 
 form = """
 <!doctype html>
 <html>
     <body>
-        <form action="/hello" method="post">
-            <label for="username">username:</label>
-            <input id="username" type="text" name="username" />
-            <input type="submit" />
-        </form>
+        <form action="/login" method="POST">
+	<div class="login">
+		<div class="login-screen">
+			<div class="app-title">
+				<h1>Login</h1>
+			</div>
+ 
+			<div class="login-form">
+				<div class="control-group">
+				<input type="text" class="login-field" value="" placeholder="username" name="username">
+				<label class="login-field-icon fui-user" for="login-name"></label>
+				</div>
+ 
+				<div class="control-group">
+				<input type="password" class="login-field" value="" placeholder="password" name="password">
+				<label class="login-field-icon fui-lock" for="login-pass"></label>
+				</div>
+ 
+                <input type="submit" value="Log in" class="btn btn-primary btn-large btn-block" >
+			    <br>
+			</div>
+		</div>
+	</div>
+</form>
     </body>
 </html>
 """
+ 
 
-@app.route("/")
-def index():
-    return form
-
-@app.route("/hello", methods=['POST'])
-def hello():
-    username = request.form['username']
-    return '<h1>Hello, ' + username + '</h1>'
-
-form = """
-<!doctype html>
-<html>
-    <body>
-        <form action="/hello" method="post">
-            <label for="password">password:</label>
-            <input id="password" type="text" name="password" />
-            <input type="submit" />
-        </form>
-    </body>
-</html>
-"""
-
-
-
-#@app.route("/")
-#def index():
-#    return form
-
-#@app.route("/hello", methods=['POST'])
-#def hello():
-#    password = request.form['password']
-#    return '<h1>Hello, ' + password + '</h1>'
-
-
-time_form = """
-    <style>
-        .error {{ color: red; }}
-    </style>
-    <h1>Validate Time</h1>
-    <form method='POST'>
-        <label>Hours (24-hour format)
-            <input name="hours" type="text" value='{hours}' />
-        </label>
-        <p class="error">{hours_error}</p>
-        <label>Minutes
-            <input name="minutes" type="text" value='{minutes}' />
-        </label>
-        <p class="error">{minutes_error}</p>
-        <input type="submit" value="Validate" />
-    </form>
-    """
-
-@app.route('/validate-time')
-def display_time_form():
-    return time_form.format(hours='', hours_error='',
-        minutes='', minutes_error='')
-
-
-def is_integer(num):
-    try:
-        int(num)
-        return True
-    except ValueError:
-        return False
-
-@app.route('/validate-time', methods=['POST'])
-def validate_time():
-
-    hours = request.form['hours']
-    minutes = request.form['minutes']
-
-    hours_error = ''
-    minutes_error = ''
-
-    if not is_integer(hours):
-        hours_error = 'Not a valid integer'
-        hours = ''
+ 
+@app.route('/')
+def home():
+    if not session.get('logged_in'):
+        return render_template('login.html')
     else:
-        hours = int(hours)
-        if hours > 23 or hours < 0:
-            hours_error = 'Hour value out of range (0-23)'
-            hours = ''
-
-    if not is_integer(minutes):
-        minutes_error = 'Not a valid integer'
-        minutes = ''
+        return "Hello Boss!  <a href='/logout'>Logout</a>"
+ 
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    if request.form['password'] == 'password' and request.form['username'] == 'admin':
+        session['logged_in'] = True
     else:
-        minutes = int(minutes)
-        if minutes > 59 or minutes < 0:
-            minutes_error = 'Minutes value out of range (0-59)'
-            minutes = ''
-
-    if not minutes_error and not hours_error:
-        return "Success!"
-    else:
-        return time_form.format(hours_error=hours_error,
-            minutes_error=minutes_error,
-            hours=hours,
-            minutes=minutes)
-
-
-app.run()
+        flash('wrong password!')
+    return home()
+ 
+@app.route("/logout")
+def logout():
+    session['logged_in'] = False
+    return home()
+ 
+if __name__ == "__main__":
+    app.secret_key = os.urandom(12)
+    app.run(debug=True,host='0.0.0.0', port=4000)
