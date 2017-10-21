@@ -1,4 +1,4 @@
-from flask import Flask
+import string
 from flask import Flask, flash, redirect, render_template, request, session, abort
 import os
 import jinja2
@@ -12,68 +12,84 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 
  
-form = """
-<!doctype html>
-<html>
-    <body>
-        <form action="/login" method="POST">
-	<div class="login">
-		<div class="login-screen">
-			<div class="app-title">
-				<h1>Login</h1>
-			</div>
- 
-			<div class="login-form">
-				<div class="control-group">
-				<input type="text" class="login-field" value="" placeholder="username" name="username">
-				<label class="login-field-icon fui-user" for="login-name"></label>
-				</div>
- 
-				<div class="control-group">
-				<input type="password" class="login-field" value="" placeholder="password" name="password">
-				<label class="login-field-icon fui-lock" for="login-pass"></label>
-				</div>
- 
-                <input type="submit" value="Log in" class="btn btn-primary btn-large btn-block" >
-			    <br>
-			</div>
-		</div>
-	</div>
-</form>
-    </body>
-</html>
-"""
- 
 @app.route("/")
 def index():
-    template = jinja_env.get_template('hello_form.html')
+    template = jinja_env.get_template('username_password_verify_password.html')
     return template.render()
-
-@app.route("/hello", methods=['POST'])
-def hello():
-    first_name = request.form['first_name']
-    template = jinja_env.get_template('hello_greeting.html')
-    return template.render(name=first_name)
  
 @app.route('/')
 def home():
     if not session.get('logged_in'):
-        return render_template('login.html')
+        return render_template('username_password_verify_password.html')
     else:
         return "Hello Boss!  <a href='/logout'>Logout</a>"
+
+    
  
-@app.route('/login', methods=['POST'])
+@app.route('/username_password_verify_password.html', methods=['POST'])
 def do_admin_login():
-    if request.form['password'] == 'password' and request.form['username'] == 'admin':
-        session['logged_in'] = True
+
+    password = request.form['password']
+    username = request.form['username']
+    verifypassword = request.form['verify_password']
+    email = request.form['email']
+    username_error = ""
+    password_error = ""
+    verifypassword_error = ""
+    temp = ""
+        
+
+    if not username or " " in username or len(username) < 3 or len(username) > 20:
+        
+        username_error = " Username is wrong."
+
+        
+        temp = username_error
+        
+
     else:
-        flash('wrong password!')
-    return home()
+        username_correct = "Username is correct."
+        temp = username_correct 
+
+    if not password or " " in password or len(password) < 3 or len(password) > 20:
+        
+        password_error = "password is wrong."
  
-@app.route("/logout")
-def logout():
-    session['logged_in'] = False
-    return home()
+        
+        
+        temp = temp + ' '+ password_error
+
+    else:
+        password_correct = "Password is correct."
+
+        temp = temp +" " + password_correct
+
+    if not verifypassword or " " in verifypassword or len(verifypassword) < 3 or len(verifypassword) > 20:
+        
+        verifypassword_error = "Verify Password is wrong."
+ 
+        
+        temp = temp + ' ' + verifypassword_error   
+
+    else:
+        verify_password_correct = "Verify Password is Correct."
+        
+        temp = temp + " " + verify_password_correct
+    
+
+    if (password != verifypassword):
+        password_validation_error = "Password is not the same as Verify Password."
+        #print("Password is not the same as Verify Password.")
+        temp =  password_validation_error
+
+
+
+    
+    template = jinja_env.get_template('username_password_verify_password.html')
+    return template.render(name=temp)
+
+
+
  
 if __name__ == "__main__":
     app.secret_key = os.urandom(12)
