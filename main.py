@@ -36,57 +36,61 @@ def do_admin_login():
     username_error = ""
     password_error = ""
     verifypassword_error = ""
+    email_error = ""
     temp = ""
         
 
     if not username or " " in username or len(username) < 3 or len(username) > 20:
         
-        username_error = " Username is wrong."
+        username_error = " The username should be between 3 and 20 characters long.  It should not contain a space."
 
         
-        temp = username_error
-        
-
-    else:
-        username_correct = "Username is correct."
-        temp = username_correct 
+ 
 
     if not password or " " in password or len(password) < 3 or len(password) > 20:
         
-        password_error = "password is wrong."
+        password_error = "The password should be between 3 and 20 characters long.  It should not contain a space."
  
         
         
-        temp = temp + ' '+ password_error
 
-    else:
-        password_correct = "Password is correct."
 
-        temp = temp +" " + password_correct
-
-    if not verifypassword or " " in verifypassword or len(verifypassword) < 3 or len(verifypassword) > 20:
+    if password != verifypassword or not verifypassword or " " in verifypassword or len(verifypassword) < 3 or len(verifypassword) > 20:
         
-        verifypassword_error = "Verify Password is wrong."
+        if password != verifypassword :
+            
+            if not verifypassword or " " in verifypassword or len(verifypassword) < 3 or len(verifypassword) > 20:
+                verifypassword_error = "The Password and Verify Password do not match.  The password should be between 3 and 20 characters long.  It should not contain a space."
+            else:
+                verifypassword_error = "The Password and Verify Password do not match."
+        else:
+            verifypassword_error = "The password should be between 3 and 20 characters long.  It should not contain a space."
  
         
-        temp = temp + ' ' + verifypassword_error   
 
-    else:
-        verify_password_correct = "Verify Password is Correct."
+
+    if not "@" in email or not "." in email or " " in email or len(email) < 3 or len(email) > 20:
         
-        temp = temp + " " + verify_password_correct
-    
-
-    if (password != verifypassword):
-        password_validation_error = "Password is not the same as Verify Password."
-        #print("Password is not the same as Verify Password.")
-        temp =  password_validation_error
+        email_error = "The email should be between 3 and 20 characters long.  It should not contain a space.  It should contain an @ and a '.'"
 
 
+    if  not username_error:
+        if not password_error:
+            
+            if not verifypassword_error:
+                if not email_error:
+        
+                    template = jinja_env.get_template('hello_form.html')
+                    return template.render(email=email, name = username)
 
-    
-    template = jinja_env.get_template('username_password_verify_password.html')
-    return template.render(name=temp)
+
+    if username_error or password_error or verifypassword_error or email_error:
+
+                    print("In Second if statement")   
+                    print(email_error)     
+                    template = jinja_env.get_template('username_password_verify_password.html')
+                    return template.render(username=username, email=email, username_error = username_error, password_error = password_error, verifypassword_error = verifypassword_error, email_error = email_error)        
+
 
 
 
