@@ -3,6 +3,11 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 import os
 import jinja2
 import cgi
+from flask_sqlalchemy import SQLAlchemy
+# Note: the connection string after :// contains the following info:
+# user:password@server:portNumber/databaseName
+
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://get-it-done:beproductive@localhost:8889/get-it-done'
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
@@ -78,7 +83,7 @@ def do_admin_login():
         if not password_error:
             
             if not verifypassword_error:
-                if not email_error:
+                if not email or not email_error:
         
                     template = jinja_env.get_template('hello_form.html')
                     return template.render(email=email, name = username)
